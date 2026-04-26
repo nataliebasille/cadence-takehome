@@ -1,0 +1,77 @@
+{
+  "patient": {
+    "id": "d5fa5834-187c-5f3e-b912-81e3677fd42a",
+    "mrn": "MRN-3100006",
+    "name": {
+      "given": "Brucia",
+      "family": "Waynwright"
+    },
+    "dob": "1981-02-19",
+    "sex": "F"
+  },
+  "procedure": {
+    "case_id": "case_31006",
+    "procedure_type": "Elective carpal tunnel release",
+    "procedure_risk": "LOW",
+    "procedure_date": "2026-06-02",
+    "is_elective": true,
+    "location": "Cadence Surgical Center - Ambulatory OR"
+  },
+  "vitals": [
+    {
+      "type": "blood_pressure",
+      "systolic": 124,
+      "diastolic": 76,
+      "date": "2026-05-20T08:50:00Z",
+      "source": "Pre-op clinic"
+    },
+    {
+      "type": "temperature",
+      "value_f": 98.1,
+      "date": "2026-05-20T08:55:00Z",
+      "source": "Pre-op clinic"
+    }
+  ],
+  "labs": [
+    {
+      "id": "96a7d868-d5cb-5d49-b69d-4301ff3bb860",
+      "code": "CBC",
+      "display": "Complete Blood Count",
+      "effective_at": "2026-05-18T07:20:00Z",
+      "status": "final",
+      "source": "Internal Hospital Lab"
+    }
+  ],
+  "medications": [
+    {
+      "name": "sertraline",
+      "active": true
+    }
+  ],
+  "conditions": [
+    {
+      "name": "Generalized anxiety disorder",
+      "active": true
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "4a1303c9-50cc-57d5-b0dc-2ef60bebd3cb",
+      "type": "History and Physical",
+      "date": "2026-05-19",
+      "author": "Ana Calder, MD",
+      "text": "HISTORY AND PHYSICAL: pre-op evaluation complete for elective carpal tunnel release scheduled 2026-06-02. No acute illness identified."
+    },
+    {
+      "doc_id": "b61a0b8d-298a-5bd0-889d-afda20416d4d",
+      "type": "Pre-op Nursing Intake",
+      "date": "2026-05-20",
+      "author": "Meera Singh, RN",
+      "text": "Nursing intake confirms medication list, fasting instructions, and arrival time."
+    }
+  ],
+  "metadata": {
+    "submission_received_at": "2026-05-21T13:10:00Z",
+    "source_system": "Cadence Intake API v2"
+  }
+}

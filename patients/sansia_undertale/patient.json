@@ -1,0 +1,77 @@
+{
+  "patient": {
+    "id": "d0586d88-f467-55b8-a6f6-a30c71bd0a2f",
+    "mrn": "MRN-3100010",
+    "name": {
+      "given": "Sansia",
+      "family": "Undertale"
+    },
+    "dob": "1998-10-10",
+    "sex": "F"
+  },
+  "procedure": {
+    "case_id": "case_31010",
+    "procedure_type": "Elective wrist arthroscopy",
+    "procedure_risk": "MODERATE",
+    "procedure_date": null,
+    "is_elective": true,
+    "location": "Cadence Surgical Center - Ambulatory OR"
+  },
+  "vitals": [
+    {
+      "type": "blood_pressure",
+      "systolic": 120,
+      "diastolic": 72,
+      "date": "2026-06-03T11:30:00Z",
+      "source": "Pre-op clinic"
+    },
+    {
+      "type": "temperature",
+      "value_f": 98.5,
+      "date": "2026-06-03T11:35:00Z",
+      "source": "Pre-op clinic"
+    }
+  ],
+  "labs": [
+    {
+      "id": "a6c6a4da-dcc2-50e3-9b53-bc3810ae7987",
+      "code": "CBC",
+      "display": "Complete Blood Count",
+      "effective_at": "2026-06-01T07:30:00Z",
+      "status": "final",
+      "source": "Internal Hospital Lab"
+    }
+  ],
+  "medications": [
+    {
+      "name": "ibuprofen as needed",
+      "active": true
+    }
+  ],
+  "conditions": [
+    {
+      "name": "Wrist pain",
+      "active": true
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "6587b67e-36bb-58a4-925e-68ac5e32124b",
+      "type": "History and Physical",
+      "date": "2026-06-02",
+      "author": "Oliver Park, MD",
+      "text": "HISTORY AND PHYSICAL: pre-op evaluation complete for planned elective wrist arthroscopy. Scheduling date is pending."
+    },
+    {
+      "doc_id": "6a359391-65a4-5978-9bdb-9fa0342329f5",
+      "type": "Surgical Consent",
+      "date": "2026-06-02",
+      "author": "Clara Finch, DO",
+      "text": "Electronic consent obtained and signed by patient for elective wrist arthroscopy."
+    }
+  ],
+  "metadata": {
+    "submission_received_at": "2026-06-03T17:00:00Z",
+    "source_system": "Cadence Intake API v2"
+  }
+}

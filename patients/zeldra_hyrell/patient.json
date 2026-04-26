@@ -1,0 +1,93 @@
+{
+  "patient": {
+    "id": "ef7c04d2-5d37-5660-bdd8-197a6a8bb0fc",
+    "mrn": "MRN-3100003",
+    "name": {
+      "given": "Zeldra",
+      "family": "Hyrell"
+    },
+    "dob": "1969-02-21",
+    "sex": "F"
+  },
+  "procedure": {
+    "case_id": "case_31003",
+    "procedure_type": "Elective lumbar fusion",
+    "procedure_risk": "HIGH",
+    "procedure_date": "2026-05-18",
+    "is_elective": true,
+    "location": "Cadence Surgical Center - Main OR"
+  },
+  "vitals": [
+    {
+      "type": "blood_pressure",
+      "systolic": 142,
+      "diastolic": 86,
+      "date": "2026-05-08T10:00:00Z",
+      "source": "Pre-op clinic"
+    },
+    {
+      "type": "temperature",
+      "value_f": 98.2,
+      "date": "2026-05-08T10:06:00Z",
+      "source": "Pre-op clinic"
+    }
+  ],
+  "labs": [
+    {
+      "id": "ff4e127b-48ae-5754-8206-9a077518bd8a",
+      "code": "CBC",
+      "display": "Complete Blood Count",
+      "effective_at": "2026-05-10T08:10:00Z",
+      "status": "final",
+      "source": "Internal Hospital Lab"
+    },
+    {
+      "id": "b9d9fb18-3c22-5726-8923-8dca1e5df306",
+      "code": "CMP",
+      "display": "Comprehensive Metabolic Panel",
+      "effective_at": "2026-04-25T08:20:00Z",
+      "status": "final",
+      "source": "Regional Reference Lab"
+    },
+    {
+      "id": "6935e2e3-cf36-58d6-9397-52d8f813ac56",
+      "code": "CMP",
+      "display": "Comprehensive Metabolic Panel",
+      "effective_at": "2026-04-12T08:20:00Z",
+      "status": "final",
+      "source": "Regional Reference Lab"
+    }
+  ],
+  "medications": [
+    {
+      "name": "metformin",
+      "active": true
+    }
+  ],
+  "conditions": [
+    {
+      "name": "Type 2 diabetes mellitus",
+      "active": true
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "37c49e61-8e55-5659-ad41-45979076b3f8",
+      "type": "History and Physical",
+      "date": "2026-05-05",
+      "author": "Imani Wells, MD",
+      "text": "HISTORY AND PHYSICAL: pre-op evaluation complete for elective lumbar fusion scheduled 2026-05-18. Patient reports no fever, chills, or acute illness."
+    },
+    {
+      "doc_id": "e5477baa-5b29-51ac-8f16-d8ab922941bc",
+      "type": "Surgical Consent",
+      "date": "2026-05-06",
+      "author": "Oscar Kim, DO",
+      "text": "Electronic consent obtained and signed by patient for elective lumbar fusion."
+    }
+  ],
+  "metadata": {
+    "submission_received_at": "2026-05-11T11:42:00Z",
+    "source_system": "Cadence Intake API v2"
+  }
+}

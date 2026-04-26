@@ -1,0 +1,77 @@
+{
+  "patient": {
+    "id": "6e84dfdd-2f2f-5ae7-a190-f2fb8bc3c822",
+    "mrn": "MRN-3100002",
+    "name": {
+      "given": "Marlo",
+      "family": "Skyrunner"
+    },
+    "dob": "1977-05-04",
+    "sex": "M"
+  },
+  "procedure": {
+    "case_id": "case_31002",
+    "procedure_type": "Elective inguinal hernia repair",
+    "procedure_risk": "MODERATE",
+    "procedure_date": "2026-05-20",
+    "is_elective": true,
+    "location": "Cadence Surgical Center - Main OR"
+  },
+  "vitals": [
+    {
+      "type": "blood_pressure",
+      "systolic": 130,
+      "diastolic": 78,
+      "date": "2026-05-09T13:30:00Z",
+      "source": "Pre-op clinic"
+    },
+    {
+      "type": "temperature",
+      "value_f": 98.7,
+      "date": "2026-05-09T13:35:00Z",
+      "source": "Pre-op clinic"
+    }
+  ],
+  "labs": [
+    {
+      "id": "6c99bc1f-b30e-5d7a-aa74-462695d1ad81",
+      "code": "CBC",
+      "display": "CBC (Complete Blood Count)",
+      "effective_at": "2026-05-06T07:55:00Z",
+      "status": "final",
+      "source": "Internal Hospital Lab"
+    }
+  ],
+  "medications": [
+    {
+      "name": "amlodipine",
+      "active": true
+    }
+  ],
+  "conditions": [
+    {
+      "name": "Hypertension",
+      "active": true
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "26c9c9eb-1dec-5870-a9d7-ee6b5d9b811c",
+      "type": "History and Physical",
+      "date": "2026-04-10",
+      "author": "Leah Organa, MD",
+      "text": "HISTORY AND PHYSICAL: pre-op evaluation completed for elective hernia repair. Patient stable at time of visit."
+    },
+    {
+      "doc_id": "2efbe6f0-8040-535a-9a27-370284fb0ec4",
+      "type": "Surgical Consent",
+      "date": "2026-05-08",
+      "author": "Davin Rhee, DO",
+      "text": "Electronic consent obtained and signed by patient for elective inguinal hernia repair."
+    }
+  ],
+  "metadata": {
+    "submission_received_at": "2026-05-10T16:08:00Z",
+    "source_system": "Cadence Intake API v2"
+  }
+}

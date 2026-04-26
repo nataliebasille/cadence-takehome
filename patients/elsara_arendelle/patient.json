@@ -1,0 +1,77 @@
+{
+  "patient": {
+    "id": "a57e0447-015d-5b7f-9c52-00b9f59ecdb8",
+    "mrn": "MRN-3100008",
+    "name": {
+      "given": "Elsara",
+      "family": "Arendelle"
+    },
+    "dob": "2001-12-21",
+    "sex": "F"
+  },
+  "procedure": {
+    "case_id": "case_31008",
+    "procedure_type": "Elective tonsillectomy",
+    "procedure_risk": "LOW",
+    "procedure_date": "2026-06-07",
+    "is_elective": true,
+    "location": "Cadence Surgical Center - Main OR"
+  },
+  "vitals": [
+    {
+      "type": "blood_pressure",
+      "systolic": 116,
+      "diastolic": 70,
+      "date": "2026-05-30T10:35:00Z",
+      "source": "Pre-op clinic"
+    },
+    {
+      "type": "temperature",
+      "value_f": 100.6,
+      "date": "2026-05-30T10:40:00Z",
+      "source": "Pre-op clinic"
+    }
+  ],
+  "labs": [
+    {
+      "id": "f0d9f2bc-b740-5092-b809-bf1c724be8c1",
+      "code": "CBC",
+      "display": "Complete Blood Count",
+      "effective_at": "2026-05-24T07:50:00Z",
+      "status": "final",
+      "source": "Internal Hospital Lab"
+    }
+  ],
+  "medications": [
+    {
+      "name": "fluticasone nasal spray",
+      "active": true
+    }
+  ],
+  "conditions": [
+    {
+      "name": "Recurrent tonsillitis",
+      "active": true
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "dc3b90ce-21e1-5dbb-8f6d-7d028dfe4509",
+      "type": "History and Physical",
+      "date": "2026-05-24",
+      "author": "Lena Torres, MD",
+      "text": "HISTORY AND PHYSICAL: pre-op evaluation complete for elective tonsillectomy scheduled 2026-06-07."
+    },
+    {
+      "doc_id": "9af2c021-9c02-515f-ae4b-1e14f848b0f4",
+      "type": "Surgical Consent",
+      "date": "2026-05-25",
+      "author": "Owen Field, DO",
+      "text": "Electronic consent obtained and signed by patient for elective tonsillectomy."
+    }
+  ],
+  "metadata": {
+    "submission_received_at": "2026-05-30T16:18:00Z",
+    "source_system": "Cadence Intake API v2"
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "patient": {
+    "id": "8df3a8ec-7345-5c20-9a13-0d1f067f5a11",
+    "mrn": "MRN-3100001",
+    "name": {
+      "given": "Hermina",
+      "family": "Grainjer"
+    },
+    "dob": "1988-09-19",
+    "sex": "F"
+  },
+  "procedure": {
+    "case_id": "case_31001",
+    "procedure_type": "Elective laparoscopic cholecystectomy",
+    "procedure_risk": "LOW",
+    "procedure_date": "2026-05-12",
+    "is_elective": true,
+    "location": "Cadence Surgical Center - Main OR"
+  },
+  "vitals": [
+    {
+      "type": "blood_pressure",
+      "systolic": 118,
+      "diastolic": 74,
+      "date": "2026-05-01T09:10:00Z",
+      "source": "Pre-op clinic"
+    },
+    {
+      "type": "temperature",
+      "value_f": 98.4,
+      "date": "2026-05-01T09:15:00Z",
+      "source": "Pre-op clinic"
+    }
+  ],
+  "labs": [
+    {
+      "id": "57db6ec5-2f57-55f1-a7b2-f7a59cbd6f9a",
+      "code": "CBC",
+      "display": "Complete Blood Count",
+      "effective_at": "2026-04-27T08:05:00Z",
+      "status": "final",
+      "source": "Internal Hospital Lab"
+    }
+  ],
+  "medications": [
+    {
+      "name": "levothyroxine",
+      "active": true
+    }
+  ],
+  "conditions": [
+    {
+      "name": "Hypothyroidism",
+      "active": true
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "c5a90f10-f32b-5d8b-b338-88ee7a7430c1",
+      "type": "History and Physical",
+      "date": "2026-04-29",
+      "author": "Nora Patel, MD",
+      "text": "HISTORY AND PHYSICAL: pre-op evaluation complete for planned elective laparoscopic cholecystectomy on 2026-05-12. No acute cardiopulmonary symptoms. Cleared for procedure from pre-op clinic perspective."
+    },
+    {
+      "doc_id": "9686f6e9-c100-5efc-9b6c-3643c1b5c83b",
+      "type": "Surgical Consent",
+      "date": "2026-05-01",
+      "author": "Maya Chen, DO",
+      "text": "Electronic consent obtained and signed by patient for elective laparoscopic cholecystectomy."
+    },
+    {
+      "doc_id": "a275d167-32b3-5410-ae65-9629f7b21e6a",
+      "type": "Pre-op Nursing Intake",
+      "date": "2026-05-01",
+      "author": "Sarah Murphy, DNP, FNP-BC",
+      "text": "Nursing intake confirms home medications, NPO plan, and arrival instructions were reviewed."
+    }
+  ],
+  "metadata": {
+    "submission_received_at": "2026-05-02T14:22:10Z",
+    "source_system": "Cadence Intake API v2"
+  }
+}

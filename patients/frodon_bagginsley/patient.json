@@ -1,0 +1,77 @@
+{
+  "patient": {
+    "id": "cdd0c882-cf56-51d4-b7c7-658a64eb6c4f",
+    "mrn": "MRN-3100007",
+    "name": {
+      "given": "Frodon",
+      "family": "Bagginsley"
+    },
+    "dob": "1993-09-22",
+    "sex": "M"
+  },
+  "procedure": {
+    "case_id": "case_31007",
+    "procedure_type": "Elective sinus surgery",
+    "procedure_risk": "MODERATE",
+    "procedure_date": "2026-06-05",
+    "is_elective": true,
+    "location": "Cadence Surgical Center - Main OR"
+  },
+  "vitals": [
+    {
+      "type": "blood_pressure",
+      "systolic": 112,
+      "diastolic": 68,
+      "date": "2026-05-28T14:10:00Z",
+      "source": "Pre-op clinic"
+    },
+    {
+      "type": "temperature",
+      "value_f": 98.9,
+      "date": "2026-05-28T14:15:00Z",
+      "source": "Pre-op clinic"
+    }
+  ],
+  "labs": [
+    {
+      "id": "f1cf4e8f-a4f0-59e2-961e-1bcf9418df8f",
+      "code": "CBC",
+      "display": "Complete Blood Count",
+      "effective_at": "2026-04-28T08:30:00Z",
+      "status": "final",
+      "source": "Internal Hospital Lab"
+    }
+  ],
+  "medications": [
+    {
+      "name": "cetirizine",
+      "active": true
+    }
+  ],
+  "conditions": [
+    {
+      "name": "Chronic sinusitis",
+      "active": true
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "3a8d9096-026b-5cbf-895a-8eea19e13b3f",
+      "type": "History and Physical",
+      "date": "2026-05-18",
+      "author": "Helena Moss, MD",
+      "text": "HISTORY AND PHYSICAL: pre-op evaluation complete for elective sinus surgery scheduled 2026-06-05."
+    },
+    {
+      "doc_id": "56ce680a-e2a3-5e5a-aadf-8a5fb79ee1d1",
+      "type": "Surgical Consent",
+      "date": "2026-05-21",
+      "author": "Arun Desai, DO",
+      "text": "Electronic consent obtained and signed by patient for elective sinus surgery."
+    }
+  ],
+  "metadata": {
+    "submission_received_at": "2026-05-28T18:25:00Z",
+    "source_system": "Cadence Intake API v2"
+  }
+}

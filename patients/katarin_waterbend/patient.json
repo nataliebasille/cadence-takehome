@@ -1,0 +1,88 @@
+{
+  "patient": {
+    "id": "df9a316f-7e47-54f8-b58f-62848a4ddfb9",
+    "mrn": "MRN-3100005",
+    "name": {
+      "given": "Katarin",
+      "family": "Waterbend"
+    },
+    "dob": "1959-11-08",
+    "sex": "F"
+  },
+  "procedure": {
+    "case_id": "case_31005",
+    "procedure_type": "Elective cataract extraction",
+    "procedure_risk": "LOW",
+    "procedure_date": "2026-05-21",
+    "is_elective": true,
+    "location": "Cadence Surgical Center - Eye OR"
+  },
+  "vitals": [
+    {
+      "type": "blood_pressure",
+      "systolic": 128,
+      "diastolic": 80,
+      "date": "2026-05-12T12:00:00Z",
+      "source": "Pre-op clinic"
+    },
+    {
+      "type": "temperature",
+      "value_f": 98.6,
+      "date": "2026-05-12T12:05:00Z",
+      "source": "Pre-op clinic"
+    }
+  ],
+  "labs": [
+    {
+      "id": "a0cfb942-8e3f-5c01-a965-c3b916d3347d",
+      "code": "CBC",
+      "display": "Complete Blood Count",
+      "effective_at": "2026-05-09T07:30:00Z",
+      "status": "final",
+      "source": "Internal Hospital Lab"
+    }
+  ],
+  "medications": [
+    {
+      "name": "warfarin",
+      "active": true
+    },
+    {
+      "name": "metoprolol",
+      "active": true
+    }
+  ],
+  "conditions": [
+    {
+      "name": "Atrial fibrillation",
+      "active": true
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "ed9c235b-e01a-59eb-a2d1-f5f67c888616",
+      "type": "History and Physical",
+      "date": "2026-05-08",
+      "author": "Rina Hale, MD",
+      "text": "HISTORY AND PHYSICAL: pre-op evaluation complete for elective cataract extraction scheduled 2026-05-21. Patient denies fever, chest pain, or new shortness of breath."
+    },
+    {
+      "doc_id": "f2c95879-ad80-5652-91a1-879a5b433f0d",
+      "type": "Surgical Consent",
+      "date": "2026-05-10",
+      "author": "Milo Grant, DO",
+      "text": "Electronic consent obtained and signed by patient for elective cataract extraction."
+    },
+    {
+      "doc_id": "8aca26f2-04c2-594b-b04d-a7ba85da88b9",
+      "type": "Perioperative Medication Plan",
+      "date": "2026-05-11",
+      "author": "Nadia Klein, NP",
+      "text": "Patient takes warfarin for atrial fibrillation. Anticoagulation will be addressed by cardiology if needed. No final hold or restart instructions documented today."
+    }
+  ],
+  "metadata": {
+    "submission_received_at": "2026-05-12T17:12:00Z",
+    "source_system": "Cadence Intake API v2"
+  }
+}

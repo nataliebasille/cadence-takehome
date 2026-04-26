@@ -1,0 +1,100 @@
+{
+  "patient": {
+    "id": "3bc62690-bf6a-56de-b243-2ab127921c41",
+    "mrn": "MRN-3100009",
+    "name": {
+      "given": "Martina",
+      "family": "McFlay"
+    },
+    "dob": "1964-06-12",
+    "sex": "F"
+  },
+  "procedure": {
+    "case_id": "case_31009",
+    "procedure_type": "Elective total hip arthroplasty",
+    "procedure_risk": "HIGH",
+    "procedure_date": "2026-06-10",
+    "is_elective": true,
+    "location": "Cadence Surgical Center - Main OR"
+  },
+  "vitals": [
+    {
+      "type": "blood_pressure",
+      "systolic": 136,
+      "diastolic": 82,
+      "date": "2026-06-01T09:45:00Z",
+      "source": "Pre-op clinic"
+    },
+    {
+      "type": "temperature",
+      "value_f": 98.3,
+      "date": "2026-06-01T09:50:00Z",
+      "source": "Pre-op clinic"
+    }
+  ],
+  "labs": [
+    {
+      "id": "52370978-b544-5d66-916d-188ec5ff9ef3",
+      "code": "CBC",
+      "display": "Complete Blood Count",
+      "effective_at": "2026-06-01T07:05:00Z",
+      "status": "final",
+      "source": "Internal Hospital Lab"
+    },
+    {
+      "id": "f0232e3c-c967-57e8-8d9e-ad59de0f4dc1",
+      "code": "CMP",
+      "display": "Comprehensive Metabolic Panel",
+      "effective_at": "2026-06-01T07:12:00Z",
+      "status": "final",
+      "source": "Internal Hospital Lab"
+    }
+  ],
+  "medications": [
+    {
+      "name": "rivaroxaban",
+      "active": true
+    },
+    {
+      "name": "losartan",
+      "active": true
+    }
+  ],
+  "conditions": [
+    {
+      "name": "History of venous thromboembolism",
+      "active": true
+    },
+    {
+      "name": "Hypertension",
+      "active": true
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "eaed2c9c-dff8-5a7b-8d31-cf3660b468ab",
+      "type": "History and Physical",
+      "date": "2026-05-29",
+      "author": "Gemma Liu, MD",
+      "text": "HISTORY AND PHYSICAL: pre-op evaluation complete for elective total hip arthroplasty scheduled 2026-06-10. Patient denies fever or acute illness."
+    },
+    {
+      "doc_id": "874663e2-af71-5f02-96bd-408260ff203a",
+      "type": "Surgical Consent",
+      "date": "2026-05-30",
+      "author": "Adrian Novak, DO",
+      "text": "Electronic consent obtained and signed by patient for elective total hip arthroplasty."
+    },
+    {
+      "doc_id": "d330b50d-4725-58fd-b601-cf7d20970dc6",
+      "type": "Perioperative Medication Plan",
+      "date": "2026-05-31",
+      "author": "Leah Stone, PharmD",
+      "text": "Patient takes rivaroxaban for history of venous thromboembolism. Hold rivaroxaban 48 hours before procedure. Resume 24 hours after procedure if hemostasis is confirmed by surgical team."
+    }
+  ],
+  "metadata": {
+    "submission_received_at": "2026-06-01T15:35:00Z",
+    "source_system": "Cadence Intake API v2"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "patient": {
+    "id": "ba6cf36b-b842-505c-98f3-4834b99d57ec",
+    "mrn": "MRN-3100004",
+    "name": {
+      "given": "Tonyo",
+      "family": "Starkley"
+    },
+    "dob": "1970-05-29",
+    "sex": "M"
+  },
+  "procedure": {
+    "case_id": "case_31004",
+    "procedure_type": "Elective shoulder arthroscopy",
+    "procedure_risk": "MODERATE",
+    "procedure_date": "2026-05-16",
+    "is_elective": true,
+    "location": "Cadence Surgical Center - Main OR"
+  },
+  "vitals": [
+    {
+      "type": "blood_pressure",
+      "systolic": 166,
+      "diastolic": 92,
+      "date": "2026-05-01T09:00:00Z",
+      "source": "Primary care visit"
+    },
+    {
+      "type": "blood_pressure",
+      "systolic": 184,
+      "diastolic": 108,
+      "date": "2026-05-13T09:20:00Z",
+      "source": "Pre-op clinic"
+    },
+    {
+      "type": "temperature",
+      "value_f": 99.1,
+      "date": "2026-05-13T09:25:00Z",
+      "source": "Pre-op clinic"
+    }
+  ],
+  "labs": [
+    {
+      "id": "5fbfdf56-b600-54e8-bbd0-251eb9d48d35",
+      "code": "CBC",
+      "display": "Complete Blood Count",
+      "effective_at": "2026-05-05T07:45:00Z",
+      "status": "final",
+      "source": "Internal Hospital Lab"
+    }
+  ],
+  "medications": [
+    {
+      "name": "atorvastatin",
+      "active": true
+    }
+  ],
+  "conditions": [
+    {
+      "name": "Hyperlipidemia",
+      "active": true
+    },
+    {
+      "name": "Hypertension",
+      "active": true
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "b8880f50-0737-5b81-bf70-ef10b6402d2d",
+      "type": "History and Physical",
+      "date": "2026-05-02",
+      "author": "Priya Shah, MD",
+      "text": "HISTORY AND PHYSICAL: pre-op evaluation complete for elective shoulder arthroscopy scheduled 2026-05-16. Patient was stable at evaluation."
+    },
+    {
+      "doc_id": "39738487-5596-505e-89c4-bd74281d0e35",
+      "type": "Surgical Consent",
+      "date": "2026-05-04",
+      "author": "Evan Brooks, DO",
+      "text": "Electronic consent obtained and signed by patient for elective shoulder arthroscopy."
+    }
+  ],
+  "metadata": {
+    "submission_received_at": "2026-05-13T15:05:00Z",
+    "source_system": "Cadence Intake API v2"
+  }
+}
