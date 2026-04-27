@@ -6,7 +6,7 @@
   "main": "dist/main.js",
   "scripts": {
     "triage": "tsx src/main.ts",
-    "eval": "evalite",
+    "evals": "evalite",
     "build": "tsc",
     "lint": "eslint .",
     "format": "prettier . --write",

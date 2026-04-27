@@ -141,7 +141,7 @@ cp .env.example .env
 | ----------------------------------- | ------------------------------------------------------------------------------------------ |
 | `pnpm run triage brucia_waynwright` | Runs the CLI against the `patients/brucia_waynwright` fixture.                             |
 | `pnpm run triage <patient-or-path>` | Runs the CLI against a patient fixture folder, a `.json` file, or a `.txt` patient packet. |
-| `pnpm eval`                         | Runs the Evalite normalizer evals against the configured OpenAI model.                     |
+| `pnpm evals`                        | Runs the Evalite normalizer evals against the configured OpenAI model.                     |
 | `pnpm test`                         | Runs the Vitest unit test suite, including deterministic rules-engine tests.               |
 | `pnpm typecheck`                    | Runs TypeScript without emitting files.                                                    |
 | `pnpm build`                        | Compiles the TypeScript project into `dist/`.                                              |
@@ -305,7 +305,9 @@ pnpm run triage brucia_waynwright --log-level info
 
 ## Reliability Design
 
-The triage flow separates normalization from policy decisions:
+The main business logic entry point is `preOpSchedulingTriager` in
+`src/engine/pre-op-scheduling-triager.ts`. It owns the full triage flow while
+keeping normalization and deterministic policy decisions separated internally:
 
 - The LLM is constrained to a typed JSON schema for normalized patient/procedure fields and evidence.
 - The normalizer does not emit `decision`, `issues`, recommendations, or explanations.
@@ -318,10 +320,10 @@ Evalite is configured for TypeScript eval files with in-memory storage in `evali
 
 Normalizer evals live in `src/evals/normalizer/*.eval.ts`, with one eval file per patient fixture plus non-Cadence JSON, packet text, and narrative text input cases. They run each case through the real Vercel AI SDK/OpenAI normalizer and score the normalized rule input against deterministic expectations.
 
-Run `pnpm eval` to execute them locally against the configured OpenAI model. You can override the model with:
+Run `pnpm evals` to execute them locally against the configured OpenAI model. You can override the model with:
 
 ```sh
-OPENAI_MODEL=gpt-5.4-mini pnpm eval
+OPENAI_MODEL=gpt-5.4-mini pnpm evals
 ```
 
 Application call sites choose the model/provider through the local LLM client:
@@ -334,18 +336,22 @@ const aiClient = createLlmClient(
   }),
 );
 
-const normalizedRuleInput = await preOpSchedulingTriager(patient, { aiClient });
-const rulesResult = verifyPreOpSchedulingPolicy(normalizedRuleInput);
+const triageResult = await preOpSchedulingTriager(patient, {
+  aiClient,
+  logger,
+  now: () => new Date(),
+});
 ```
 
-The triager itself only normalizes, and the rules engine consumes the normalized payload.
+The triager is the public business-logic function; the normalizer and rules
+runner are implementation details behind it.
 
 ## Project Structure
 
 ```text
 src/
   main.ts         Application entry point
-  engine/         Prompt triager and deterministic policy verifier
+  engine/         Main triager, normalizer, and deterministic rules engine
   evals/          Evalite eval files
   lib/
     ai/           LLM provider/client abstraction
