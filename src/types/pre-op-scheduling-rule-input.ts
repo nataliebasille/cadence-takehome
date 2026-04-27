@@ -1,6 +1,18 @@
 import { z } from "zod";
 
-const dateSchema = z.coerce.date();
+const dateSchema = z.string().transform((value, context) => {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    context.addIssue({
+      code: "custom",
+      message: "Invalid date",
+    });
+    return z.NEVER;
+  }
+
+  return date;
+});
 const nullableDateSchema = dateSchema.nullable();
 
 export const normalizedDocumentEvidenceSchema = z.object({

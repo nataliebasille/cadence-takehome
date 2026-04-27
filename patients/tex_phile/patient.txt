@@ -1,0 +1,37 @@
+Source system: Textual Healing Fax Packet
+Submission received at: 2026-05-01T14:25:00Z
+
+Patient
+- ID: tex-phile-2026-001
+- MRN: TXT-4242
+- Name: Tex Phile
+- DOB: 1968-02-14
+- Sex: F
+
+Procedure
+- Case ID: tex-case-4242
+- Procedure type: Elective total hip arthroplasty
+- Risk: HIGH
+- Procedure date: 2026-05-20
+- Elective: true
+- Location: Northstar Orthopedic Hospital
+
+Vitals
+- Blood pressure: 126/78 measured 2026-05-08T09:10:00Z, source Northstar pre-op clinic
+- Temperature: 98.2 F measured 2026-05-08T09:12:00Z, source Northstar pre-op clinic
+
+Labs
+- CBC final, effective 2026-05-10T07:30:00Z, source Northstar Lab
+- CMP final, effective 2026-05-10T07:45:00Z, source Northstar Lab
+
+Medications
+- warfarin, active
+- lisinopril, active
+
+Documents
+- History and Physical, date 2026-05-08, author Dr. Mira Shah:
+  HISTORY AND PHYSICAL: pre-op evaluation complete for elective total hip arthroplasty.
+- Surgical Consent, date 2026-05-09, author Northstar consent desk:
+  Surgical consent signed by patient for total hip arthroplasty.
+- Perioperative Anticoagulation Plan, date 2026-05-09, author Cardiology:
+  Patient takes warfarin. Hold warfarin five days before procedure. Resume warfarin after procedure when cleared by surgeon.

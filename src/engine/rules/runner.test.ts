@@ -50,11 +50,41 @@ describe("pre-op scheduling rules runner", () => {
     expect(result.explanation).toContain(
       "ANTICOAGULATION_MANAGEMENT: A documented perioperative anticoagulation management plan is required for patients taking anticoagulants.",
     );
-    expect(result.evidence).toContainEqual({ sourcePath: "procedures[0]" });
-    expect(result.evidence).toContainEqual({
-      sourcePath: "medications[0]",
-      source: "warfarin 5 mg daily",
-    });
+    expect(result.evidence).toEqual([
+      expect.objectContaining({ sourcePath: "procedures[0]" }),
+      expect.objectContaining({
+        sourcePath: "vitals[0]",
+        source: expect.stringContaining("blood pressure: 120/80"),
+      }),
+      expect.objectContaining({
+        sourcePath: "vitals[1]",
+        source: expect.stringContaining("temperature: 98.6 F"),
+      }),
+      expect.objectContaining({
+        documentId: "doc-hp-1",
+        sourcePath: "documents[0]",
+        source: expect.stringContaining("history and physical"),
+      }),
+      expect.objectContaining({
+        documentId: "doc-consent-1",
+        sourcePath: "documents[1]",
+        source: expect.stringContaining("surgical consent"),
+      }),
+      expect.objectContaining({
+        documentId: "lab-cbc-1",
+        sourcePath: "labs[0]",
+        source: expect.stringContaining("CBC"),
+      }),
+      expect.objectContaining({
+        documentId: "lab-cmp-1",
+        sourcePath: "labs[1]",
+        source: expect.stringContaining("CMP"),
+      }),
+      expect.objectContaining({
+        sourcePath: "medications[0]",
+        source: "active anticoagulant: warfarin; value: warfarin 5 mg daily",
+      }),
+    ]);
   });
 
   describe("acute safety exclusions", () => {
@@ -201,14 +231,12 @@ describe("pre-op scheduling rules runner", () => {
     it("allows history and physical on the procedure date and exactly 30 days before", () => {
       expectReady(
         run((input) => {
-          input.evidence.historyAndPhysical!.date =
-            calendarDate("2026-06-30");
+          input.evidence.historyAndPhysical!.date = calendarDate("2026-06-30");
         }),
       );
       expectReady(
         run((input) => {
-          input.evidence.historyAndPhysical!.date =
-            calendarDate("2026-05-31");
+          input.evidence.historyAndPhysical!.date = calendarDate("2026-05-31");
         }),
       );
     });
@@ -263,7 +291,7 @@ describe("pre-op scheduling rules runner", () => {
       (risk) => {
         const result = run((input) => {
           input.procedure.risk = risk;
-          input.evidence.latestCbc!.effectiveAt = new Date(
+          input.evidence.latestCbc!.effectiveAt = instant(
             "2026-05-30T08:00:00.000Z",
           );
         });
@@ -286,7 +314,7 @@ describe("pre-op scheduling rules runner", () => {
         expectReady(
           run((input) => {
             input.procedure.risk = risk;
-            input.evidence.latestCbc!.effectiveAt = new Date(
+            input.evidence.latestCbc!.effectiveAt = instant(
               "2026-05-31T08:00:00.000Z",
             );
           }),
@@ -307,7 +335,7 @@ describe("pre-op scheduling rules runner", () => {
     it("requires high-risk CBC within 14 days and includes lab and procedure evidence", () => {
       const result = run((input) => {
         setHighRisk(input);
-        input.evidence.latestCbc!.effectiveAt = new Date(
+        input.evidence.latestCbc!.effectiveAt = instant(
           "2026-06-15T08:00:00.000Z",
         );
       });
@@ -327,7 +355,7 @@ describe("pre-op scheduling rules runner", () => {
       expectReady(
         run((input) => {
           setHighRisk(input);
-          input.evidence.latestCbc!.effectiveAt = new Date(
+          input.evidence.latestCbc!.effectiveAt = instant(
             "2026-06-16T08:00:00.000Z",
           );
         }),
@@ -347,7 +375,7 @@ describe("pre-op scheduling rules runner", () => {
     it("requires high-risk CMP within 14 days and includes lab and procedure evidence", () => {
       const result = run((input) => {
         setHighRisk(input);
-        input.evidence.latestCmp!.effectiveAt = new Date(
+        input.evidence.latestCmp!.effectiveAt = instant(
           "2026-06-15T08:00:00.000Z",
         );
       });
@@ -367,7 +395,7 @@ describe("pre-op scheduling rules runner", () => {
       expectReady(
         run((input) => {
           setHighRisk(input);
-          input.evidence.latestCmp!.effectiveAt = new Date(
+          input.evidence.latestCmp!.effectiveAt = instant(
             "2026-06-16T08:00:00.000Z",
           );
         }),
@@ -395,18 +423,15 @@ describe("pre-op scheduling rules runner", () => {
 
     it("requires follow-up when required tests are dated after the procedure", () => {
       const lowRiskResult = run((input) => {
-        input.evidence.latestCbc!.effectiveAt = new Date(
+        input.evidence.latestCbc!.effectiveAt = instant(
           "2026-07-01T08:00:00.000Z",
         );
       });
-      expectOnlyIssue(
-        lowRiskResult,
-        "LOW_PROCEDURE_CBC_OUTSIDE_30_DAY_WINDOW",
-      );
+      expectOnlyIssue(lowRiskResult, "LOW_PROCEDURE_CBC_OUTSIDE_30_DAY_WINDOW");
 
       const highRiskResult = run((input) => {
         setHighRisk(input);
-        input.evidence.latestCmp!.effectiveAt = new Date(
+        input.evidence.latestCmp!.effectiveAt = instant(
           "2026-07-01T08:00:00.000Z",
         );
       });
@@ -421,8 +446,7 @@ describe("pre-op scheduling rules runner", () => {
     it("does not require a plan when there are no active anticoagulants", () => {
       expectReady(
         run((input) => {
-          input.evidence.anticoagulationPlan.planIsDocumentedAsMissingOrIncomplete =
-            true;
+          input.evidence.anticoagulationPlan.planIsDocumentedAsMissingOrIncomplete = true;
         }),
       );
     });
@@ -535,6 +559,10 @@ function calendarDate(value: string) {
   return new Date(`${value}T00:00:00`);
 }
 
+function instant(value: string) {
+  return new Date(value);
+}
+
 function makeInput(
   mutate?: (input: PreOpSchedulingRuleInput) => void,
 ): PreOpSchedulingRuleInput {
@@ -559,14 +587,14 @@ function makeInput(
       latestBloodPressure: {
         systolic: 120,
         diastolic: 80,
-        measuredAt: new Date("2026-06-25T10:00:00.000Z"),
+        measuredAt: instant("2026-06-25T10:00:00.000Z"),
         source: "Pre-op clinic",
         sourcePath: "vitals[0]",
         rawValue: "120/80",
       },
       latestTemperature: {
         valueF: 98.6,
-        measuredAt: new Date("2026-06-25T10:05:00.000Z"),
+        measuredAt: instant("2026-06-25T10:05:00.000Z"),
         source: "Pre-op clinic",
         sourcePath: "vitals[1]",
         rawValue: "98.6 F",
@@ -593,7 +621,7 @@ function makeInput(
       latestCbc: {
         labId: "lab-cbc-1",
         code: "CBC",
-        effectiveAt: new Date("2026-06-15T08:00:00.000Z"),
+        effectiveAt: instant("2026-06-15T08:00:00.000Z"),
         status: "final",
         source: "Core Lab",
         sourcePath: "labs[0]",
@@ -602,7 +630,7 @@ function makeInput(
       latestCmp: {
         labId: "lab-cmp-1",
         code: "CMP",
-        effectiveAt: new Date("2026-06-20T08:00:00.000Z"),
+        effectiveAt: instant("2026-06-20T08:00:00.000Z"),
         status: "final",
         source: "Core Lab",
         sourcePath: "labs[1]",
@@ -639,10 +667,7 @@ function run(
   return runPreOpSchedulingRules(makeInput(mutate));
 }
 
-function issueByCode(
-  result: RulesRunnerResult,
-  code: string,
-): RuleRunIssue {
+function issueByCode(result: RulesRunnerResult, code: string): RuleRunIssue {
   const issue = result.issues.find((issue) => issue.code === code);
   expect(issue).toBeDefined();
   return issue as RuleRunIssue;
@@ -664,7 +689,7 @@ function expectReady(result: RulesRunnerResult) {
 
 function setHighRisk(input: PreOpSchedulingRuleInput) {
   input.procedure.risk = "HIGH";
-  input.evidence.latestCbc!.effectiveAt = new Date("2026-06-20T08:00:00.000Z");
+  input.evidence.latestCbc!.effectiveAt = instant("2026-06-20T08:00:00.000Z");
 }
 
 function setActiveAnticoagulant(input: PreOpSchedulingRuleInput) {

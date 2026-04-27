@@ -1,4 +1,5 @@
 import anticoagulationPlan from "./anticoagulation-management/require-plan-if-taking-anticoagulation-medication.ts";
+import { isValid, parseISO } from "date-fns";
 import historyAndPhysicalWithin30Days from "./required-documentations/require-h-and-p-within-30-days.ts";
 import signedSurgicalConsent from "./required-documentations/require-signed-concent.ts";
 import highRiskCbcWithin14Days from "./required-testing/high-risk-cbc-within-14-days.ts";
@@ -59,7 +60,7 @@ export function runPreOpSchedulingRules(
     decision: decide(issues),
     issues,
     explanation: explain(issues),
-    evidence: collectEvidence(issues),
+    evidence: collectEvidence(input),
     ruleResults,
   };
 }
@@ -90,26 +91,149 @@ function explain(issues: RuleRunIssue[]) {
     .join(" | ");
 }
 
-function collectEvidence(issues: RuleRunIssue[]): TriageEvidence[] {
-  const seen = new Set<string>();
-  const evidence: TriageEvidence[] = [];
+function collectEvidence(input: PreOpSchedulingRuleInput): TriageEvidence[] {
+  const plan = input.evidence.anticoagulationPlan;
 
-  for (const issue of issues) {
-    const details = issue.details as { evidence?: TriageEvidence[] };
+  return [
+    {
+      sourcePath: input.procedure.sourcePath,
+      source: [
+        `procedure: ${input.procedure.type}`,
+        `risk: ${input.procedure.risk}`,
+        input.procedure.date ?
+          `date: ${formatDate(input.procedure.date)}`
+        : null,
+      ]
+        .filter(Boolean)
+        .join("; "),
+    },
+    ...(input.evidence.latestBloodPressure ?
+      [
+        {
+          sourcePath: input.evidence.latestBloodPressure.sourcePath,
+          source: [
+            `blood pressure: ${input.evidence.latestBloodPressure.systolic}/${input.evidence.latestBloodPressure.diastolic}`,
+            `measured: ${formatDate(input.evidence.latestBloodPressure.measuredAt)}`,
+            `source: ${input.evidence.latestBloodPressure.source}`,
+          ].join("; "),
+        },
+      ]
+    : []),
+    ...(input.evidence.latestTemperature ?
+      [
+        {
+          sourcePath: input.evidence.latestTemperature.sourcePath,
+          source: [
+            `temperature: ${input.evidence.latestTemperature.valueF} F`,
+            `measured: ${formatDate(input.evidence.latestTemperature.measuredAt)}`,
+            `source: ${input.evidence.latestTemperature.source}`,
+          ].join("; "),
+        },
+      ]
+    : []),
+    ...formatDocumentEvidence(
+      "history and physical",
+      input.evidence.historyAndPhysical,
+    ),
+    ...formatDocumentEvidence(
+      "surgical consent",
+      input.evidence.surgicalConsent,
+      [
+        input.evidence.surgicalConsent ?
+          `signed: ${String(input.evidence.surgicalConsent.isSigned)}`
+        : null,
+      ],
+    ),
+    ...formatLabEvidence(input.evidence.latestCbc),
+    ...formatLabEvidence(input.evidence.latestCmp),
+    ...input.evidence.activeAnticoagulants.map((medication) => ({
+      sourcePath: medication.sourcePath,
+      source: `active anticoagulant: ${medication.name}; value: ${medication.rawValue}`,
+    })),
+    ...(plan.sourcePath ?
+      [
+        {
+          sourcePath: plan.sourcePath,
+          source: [
+            "anticoagulation plan",
+            `present: ${String(plan.present)}`,
+            `pre-procedure instructions: ${String(plan.hasPreProcedureInstruction)}`,
+            `post-procedure instructions: ${String(plan.hasPostProcedureInstruction)}`,
+            `documented missing/incomplete: ${String(plan.planIsDocumentedAsMissingOrIncomplete)}`,
+            plan.source ? `source: ${plan.source}` : null,
+          ]
+            .filter(Boolean)
+            .join("; "),
+        },
+      ]
+    : []),
+    ...(plan.planMissingOrIncompleteReason ?
+      [
+        {
+          sourcePath: plan.planMissingOrIncompleteReason.sourcePath,
+          source: `anticoagulation plan issue: ${plan.planMissingOrIncompleteReason.excerpt}`,
+        },
+      ]
+    : []),
+  ];
+}
 
-    for (const item of details.evidence ?? []) {
-      const key = JSON.stringify(item);
-
-      if (seen.has(key)) {
-        continue;
-      }
-
-      seen.add(key);
-      evidence.push(item);
-    }
+function formatDocumentEvidence(
+  label: string,
+  document: PreOpSchedulingRuleInput["evidence"]["historyAndPhysical"],
+  extraDetails: Array<string | null> = [],
+): TriageEvidence[] {
+  if (!document) {
+    return [];
   }
 
-  return evidence;
+  return [
+    {
+      documentId: document.documentId,
+      sourcePath: document.sourcePath,
+      source: [
+        label,
+        `date: ${document.date ? formatDate(document.date) : "missing"}`,
+        `source: ${document.source}`,
+        ...extraDetails,
+      ]
+        .filter(Boolean)
+        .join("; "),
+    },
+  ];
+}
+
+function formatLabEvidence(
+  lab: PreOpSchedulingRuleInput["evidence"]["latestCbc"],
+): TriageEvidence[] {
+  if (!lab) {
+    return [];
+  }
+
+  return [
+    {
+      documentId: lab.labId,
+      sourcePath: lab.sourcePath,
+      source: [
+        lab.code,
+        lab.rawValue,
+        `effective: ${lab.effectiveAt ? formatDate(lab.effectiveAt) : "missing"}`,
+        lab.status ? `status: ${lab.status}` : null,
+        `source: ${lab.source}`,
+      ]
+        .filter(Boolean)
+        .join("; "),
+    },
+  ];
+}
+
+function formatDate(value: Date | string) {
+  if (value instanceof Date) {
+    return isValid(value) ? value.toISOString() : String(value);
+  }
+
+  const parsed = parseISO(value);
+  return isValid(parsed) ? parsed.toISOString() : value;
 }
 
 function getIssueCategory(

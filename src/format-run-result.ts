@@ -11,6 +11,11 @@ type IssueDetails = {
   additionalDetails?: unknown;
 };
 
+type EvidenceSummary = {
+  label: string;
+  details: string[];
+};
+
 const color = {
   bold: (value: string) => `\u001B[1m${value}\u001B[22m`,
   dim: (value: string) => `\u001B[2m${value}\u001B[22m`,
@@ -29,9 +34,9 @@ export function formatRunResult(result: RulesRunnerResult) {
     "",
     ...formatIssues(result.issues),
     "",
-    ...formatEvidence(result.evidence),
-    "",
     ...formatRuleResults(result.ruleResults),
+    "",
+    ...formatEvidence(result),
   ];
 
   return lines.join("\n").trimEnd();
@@ -60,14 +65,18 @@ function formatIssues(issues: RuleRunIssue[]) {
   ];
 }
 
-function formatEvidence(evidence: TriageEvidence[]) {
-  if (evidence.length === 0) {
+function formatEvidence(result: RulesRunnerResult) {
+  if (result.evidence.length === 0) {
     return [`${color.bold("Evidence:")} ${color.green("none")}`];
   }
 
+  const summariesByEvidence = getEvidenceSummariesByEvidence(result.issues);
+
   return [
-    color.bold("Evidence:"),
-    ...evidence.map((item) => `- ${formatEvidenceItem(item)}`),
+    color.bold(`Evidence gathered (${result.evidence.length}):`),
+    ...result.evidence.flatMap((item, index) => [
+      `${index + 1}. ${formatEvidenceSummary(item, summariesByEvidence.get(item.sourcePath))}`,
+    ]),
   ];
 }
 
@@ -90,6 +99,152 @@ function formatEvidenceItem(item: TriageEvidence) {
   ].filter(Boolean);
 
   return parts.join(" | ");
+}
+
+function getEvidenceSummariesByEvidence(issues: RuleRunIssue[]) {
+  const summariesByEvidence = new Map<string, EvidenceSummary>();
+
+  for (const issue of issues) {
+    const details = issue.details as IssueDetails;
+
+    for (const item of details.evidence ?? []) {
+      const summary = summariesByEvidence.get(item.sourcePath) ?? {
+        label: formatEvidenceLabel(item, issue),
+        details: [],
+      };
+
+      for (const detail of formatEvidenceDetails(item, issue, details)) {
+        if (!summary.details.includes(detail)) {
+          summary.details.push(detail);
+        }
+      }
+
+      summariesByEvidence.set(item.sourcePath, summary);
+    }
+  }
+
+  return summariesByEvidence;
+}
+
+function formatEvidenceSummary(
+  item: TriageEvidence,
+  summary?: EvidenceSummary,
+) {
+  const label = summary?.label ?? formatEvidenceLabel(item);
+  const details = summary?.details ?? [];
+  const formattedDetails = details.length > 0 ? ` (${details.join("; ")})` : "";
+
+  return `${color.cyan(label)}: ${formatEvidenceItem(item)}${formattedDetails}`;
+}
+
+function formatEvidenceLabel(item: TriageEvidence, issue?: RuleRunIssue) {
+  const searchableText = [
+    item.sourcePath,
+    item.source,
+    item.documentId,
+    issue?.code,
+    issue?.rule,
+    issue?.category,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (
+    searchableText.includes("blood_pressure") ||
+    searchableText.includes("blood pressure")
+  ) {
+    return "Blood pressure";
+  }
+
+  if (searchableText.includes("temperature")) {
+    return "Temperature";
+  }
+
+  if (searchableText.includes("cbc")) {
+    return "CBC";
+  }
+
+  if (searchableText.includes("cmp")) {
+    return "CMP";
+  }
+
+  if (
+    searchableText.includes("history_and_physical") ||
+    searchableText.includes("history and physical") ||
+    searchableText.includes("h-and-p")
+  ) {
+    return "History and physical";
+  }
+
+  if (searchableText.includes("consent")) {
+    return "Surgical consent";
+  }
+
+  if (
+    searchableText.includes("medication") ||
+    searchableText.includes("anticoag")
+  ) {
+    return item.sourcePath.includes("medications") ?
+        "Active anticoagulant"
+      : "Anticoagulation plan";
+  }
+
+  if (searchableText.includes("procedure")) {
+    return "Procedure";
+  }
+
+  return "Evidence";
+}
+
+function formatEvidenceDetails(
+  item: TriageEvidence,
+  issue: RuleRunIssue,
+  details: IssueDetails,
+) {
+  const detailLines = [...(details.issues ?? [])];
+
+  if (issue.category === "ANTICOAGULATION_MANAGEMENT") {
+    detailLines.push(...formatAnticoagulationDetails(item, details));
+  }
+
+  return detailLines;
+}
+
+function formatAnticoagulationDetails(
+  item: TriageEvidence,
+  details: IssueDetails,
+) {
+  const additionalDetails = details.additionalDetails;
+
+  if (!isRecord(additionalDetails)) {
+    return [];
+  }
+
+  if (
+    item.sourcePath.includes("medications") &&
+    Array.isArray(additionalDetails.activeAnticoagulants)
+  ) {
+    return [
+      `active anticoagulants: ${additionalDetails.activeAnticoagulants.join(", ")}`,
+    ];
+  }
+
+  const plan = additionalDetails.anticoagulationPlan;
+  if (!isRecord(plan)) {
+    return [];
+  }
+
+  return [
+    `plan present: ${String(plan.present)}`,
+    `pre-procedure instructions: ${String(plan.hasPreProcedureInstruction)}`,
+    `post-procedure instructions: ${String(plan.hasPostProcedureInstruction)}`,
+    `documented missing/incomplete: ${String(plan.planIsDocumentedAsMissingOrIncomplete)}`,
+  ];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
 function formatAdditionalDetails(additionalDetails: unknown) {

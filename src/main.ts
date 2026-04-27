@@ -1,4 +1,4 @@
-import { access, readdir, readFile } from "node:fs/promises";
+import { access, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -13,11 +13,9 @@ import { createConsoleLogger, parseLogLevel } from "./lib/logger.ts";
 async function main() {
   loadLocalEnv();
 
-  const [options, config] = await Promise.all([
-    parseArgs(),
-    appConfig.fromEnv(process.env),
-  ]);
+  const options = await parseArgs();
   const patient = await loadPatient(options.patient);
+  const config = await appConfig.fromEnv(process.env);
 
   const aiClient = createLlmClient(
     createOpenAIModel({
@@ -47,12 +45,12 @@ async function parseArgs() {
           type: "string",
           demandOption: true,
           describe:
-            "Patient folder under patients/ or path to a patient JSON file",
+            "Patient folder under patients/ or path to a patient text or JSON file",
         }),
     )
     .check((args) => {
       if (args.patient === undefined) {
-        throw new Error("Patient is required. Usage: pnpm dev <patient>");
+        throw new Error("Patient is required. Usage: pnpm run cli <patient>");
       }
 
       return true;
@@ -94,28 +92,96 @@ function loadLocalEnv() {
 }
 
 async function loadPatient(patientArg: string) {
-  const patientPath = await resolvePatientPath(patientArg);
-  const rawPatient = JSON.parse(await readFile(patientPath, "utf8"));
-  return rawPatient;
+  const patientSource = await resolvePatientPath(patientArg);
+  const rawPatient = await readFile(patientSource.path, "utf8");
+
+  if (patientSource.kind === "text") {
+    if (patientSource.shouldPersistFixture) {
+      const fixturePath = await persistTextPatientFixture(
+        patientArg,
+        rawPatient,
+      );
+      console.info(`Created reusable text patient fixture: ${fixturePath}`);
+    }
+
+    return rawPatient;
+  }
+
+  return JSON.parse(rawPatient);
 }
 
 async function resolvePatientPath(patientArg: string) {
   const directPath = path.resolve(patientArg);
 
   if (await fileExists(directPath)) {
-    return directPath;
+    const kind = patientFileKind(directPath);
+    return {
+      kind,
+      path: directPath,
+      shouldPersistFixture:
+        kind === "text" && !isExistingTextPatientFixture(directPath),
+    } as const;
   }
 
-  const patientPath = path.resolve("patients", patientArg, "patient.json");
+  const textPatientPath = path.resolve("patients", patientArg, "patient.txt");
 
-  if (await fileExists(patientPath)) {
-    return patientPath;
+  if (await fileExists(textPatientPath)) {
+    return {
+      kind: "text",
+      path: textPatientPath,
+      shouldPersistFixture: false,
+    } as const;
+  }
+
+  const jsonPatientPath = path.resolve("patients", patientArg, "patient.json");
+
+  if (await fileExists(jsonPatientPath)) {
+    return {
+      kind: "json",
+      path: jsonPatientPath,
+      shouldPersistFixture: false,
+    } as const;
   }
 
   const patients = await listAvailablePatients();
   throw new Error(
     `Unknown patient "${patientArg}". Available patients: ${patients.join(", ")}`,
   );
+}
+
+function patientFileKind(filePath: string): "text" | "json" {
+  return path.extname(filePath).toLowerCase() === ".txt" ? "text" : "json";
+}
+
+function isExistingTextPatientFixture(filePath: string) {
+  const relativePath = path.relative(process.cwd(), filePath);
+  const parts = relativePath.split(path.sep);
+
+  return (
+    parts.length === 3 && parts[0] === "patients" && parts[2] === "patient.txt"
+  );
+}
+
+async function persistTextPatientFixture(patientArg: string, text: string) {
+  const fixtureName = textFixtureName(patientArg);
+  const fixtureDirectory = path.resolve("patients", fixtureName);
+  const fixturePath = path.join(fixtureDirectory, "patient.txt");
+
+  await mkdir(fixtureDirectory, { recursive: true });
+  await writeFile(fixturePath, text);
+
+  return path.relative(process.cwd(), fixturePath);
+}
+
+function textFixtureName(patientArg: string) {
+  const parsed = path.parse(patientArg);
+  const baseName = parsed.name || parsed.base || "text_patient";
+  const slug = baseName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  return slug.length > 0 ? slug : "text_patient";
 }
 
 async function fileExists(filePath: string) {

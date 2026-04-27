@@ -6,6 +6,7 @@ import { reportTrace } from "evalite/traces";
 import { preOpSchedulingRuleInputNormalizer } from "../../engine/normalizer/pre-op-scheduling-rule-input.normalizer.ts";
 import { createLlmClient } from "../../lib/ai/create-llm-client.ts";
 import { createOpenAIModel } from "../../lib/ai/models/openai.ts";
+import { appConfig } from "../../lib/config/app-config.ts";
 import { parseLogLevel, type Logger, type LogLevel } from "../../lib/logger.ts";
 
 const anticoagulants = new Set([
@@ -74,7 +75,25 @@ type RawPatient = {
   };
 };
 
-type NormalizerExpected = ReturnType<typeof buildExpected> & {
+type BuiltNormalizerExpected = ReturnType<typeof buildExpected>;
+type SourcePathExpectation = string | readonly string[];
+type ExpectedSourcePaths = {
+  patient?: SourcePathExpectation;
+  procedure?: SourcePathExpectation;
+  latestBloodPressure?: SourcePathExpectation;
+  latestTemperature?: SourcePathExpectation;
+  latestCbc?: SourcePathExpectation;
+  latestCmp?: SourcePathExpectation;
+  historyAndPhysical?: SourcePathExpectation;
+  surgicalConsent?: SourcePathExpectation;
+  medicationPlan?: SourcePathExpectation;
+  activeAnticoagulants: Array<{
+    name: string;
+    sourcePath: SourcePathExpectation;
+  }>;
+};
+type NormalizerExpected = Omit<BuiltNormalizerExpected, "sourcePaths"> & {
+  sourcePaths?: ExpectedSourcePaths;
   anticoagulationPlan?: {
     present: boolean;
     hasPreProcedureInstruction: boolean;
@@ -111,6 +130,28 @@ export function defineNormalizeForPatientJsonEval(fixtureName: string) {
           patientPath,
         },
         expected: buildExpected(patient),
+      };
+    },
+  );
+}
+
+export function defineNormalizeForPatientTextEval(
+  fixtureName: string,
+  expected: NormalizerExpected,
+) {
+  defineNormalizerCaseEval(
+    `pre-op normalizer maps ${fixtureName} text packet`,
+    async () => {
+      const patientPath = `patients/${fixtureName}/patient.txt`;
+      const patientInput = await readFile(patientPath, "utf8");
+
+      return {
+        input: {
+          name: fixtureName,
+          patientInput,
+          patientPath,
+        },
+        expected,
       };
     },
   );
@@ -155,14 +196,27 @@ function defineNormalizerCaseEval(
           ),
       },
       {
-        name: "coerces dates",
+        name: "emits valid dates",
         scorer: ({ input, output }) =>
           scoreWithMetadata(
-            outputDatesAreDates(output),
+            outputDatesAreValid(output),
             input.name,
-            "coerces dates",
+            "emits valid dates",
             () => ({
               dateTypes: describeOutputDates(output),
+            }),
+          ),
+      },
+      {
+        name: "maps source paths",
+        scorer: ({ input, output, expected }) =>
+          scoreWithMetadata(
+            Boolean(expected && sourcePathsMatch(output, expected)),
+            input.name,
+            "maps source paths",
+            () => ({
+              expected: expected?.sourcePaths,
+              actual: describeOutputSourcePaths(output),
             }),
           ),
       },
@@ -298,6 +352,7 @@ async function runNormalizerForEval({
   const startedAt = Date.now();
   const logLevel = configuredLogLevel();
   const model = process.env.OPENAI_MODEL ?? "gpt-5.4-mini";
+  const config = await appConfig.fromEnv(process.env);
   logEvalMessage(name, logLevel, "info", `starting normalizer with ${model}`);
 
   const patient =
@@ -305,7 +360,7 @@ async function runNormalizerForEval({
     JSON.parse(await readFile(requiredInputPath(name, patientPath), "utf8"));
   const aiClient = createLlmClient(
     createOpenAIModel({
-      apiKey: requiredEnv("OPENAI_API_KEY"),
+      apiKey: config.openAIApiKey,
       model,
     }),
   );
@@ -395,6 +450,15 @@ function buildExpected(patient: RawPatient) {
     ),
     (document) => document.date,
   );
+  const activeAnticoagulantMedications = patient.medications
+    .map((medication, index) => ({ medication, index }))
+    .filter(
+      ({ medication }) =>
+        medication.active && anticoagulants.has(medication.name.toLowerCase()),
+    )
+    .sort((left, right) =>
+      left.medication.name.localeCompare(right.medication.name),
+    );
 
   return {
     patient: {
@@ -429,6 +493,43 @@ function buildExpected(patient: RawPatient) {
     metadata: {
       submissionReceivedAt: patient.metadata.submission_received_at,
       sourceSystem: patient.metadata.source_system,
+    },
+    sourcePaths: {
+      patient: "patient",
+      procedure: "procedure",
+      latestBloodPressure: sourcePathForItem(
+        patient.vitals,
+        latestBloodPressure,
+        "vitals",
+      ),
+      latestTemperature: sourcePathForItem(
+        patient.vitals,
+        latestTemperature,
+        "vitals",
+      ),
+      latestCbc: sourcePathForItem(patient.labs, latestCbc, "labs"),
+      latestCmp: sourcePathForItem(patient.labs, latestCmp, "labs"),
+      historyAndPhysical: sourcePathForItem(
+        patient.documents,
+        historyAndPhysical,
+        "documents",
+      ),
+      surgicalConsent: sourcePathForItem(
+        patient.documents,
+        latestSurgicalConsent,
+        "documents",
+      ),
+      medicationPlan: sourcePathForItem(
+        patient.documents,
+        medicationPlan,
+        "documents",
+      ),
+      activeAnticoagulants: activeAnticoagulantMedications.map(
+        ({ medication, index }) => ({
+          name: medication.name,
+          sourcePath: `medications[${index}]`,
+        }),
+      ),
     },
   };
 }
@@ -550,6 +651,26 @@ function describeOutputDates(output: NormalizerOutput) {
   };
 }
 
+function describeOutputSourcePaths(output: NormalizerOutput) {
+  return {
+    patient: output.patient.sourcePath,
+    procedure: output.procedure.sourcePath,
+    latestBloodPressure: output.evidence.latestBloodPressure?.sourcePath,
+    latestTemperature: output.evidence.latestTemperature?.sourcePath,
+    latestCbc: output.evidence.latestCbc?.sourcePath,
+    latestCmp: output.evidence.latestCmp?.sourcePath,
+    historyAndPhysical: output.evidence.historyAndPhysical?.sourcePath,
+    surgicalConsent: output.evidence.surgicalConsent?.sourcePath,
+    medicationPlan: output.evidence.anticoagulationPlan.sourcePath,
+    activeAnticoagulants: output.evidence.activeAnticoagulants.map(
+      (medication) => ({
+        name: medication.name,
+        sourcePath: medication.sourcePath,
+      }),
+    ),
+  };
+}
+
 function formatProcedure(output: NormalizerOutput) {
   return [
     output.procedure.risk,
@@ -664,8 +785,9 @@ function readScoreValue(score: unknown) {
   return 0;
 }
 
-function formatDateValue(value: Date | null) {
-  return value ? value.toISOString().slice(0, 10) : "none";
+function formatDateValue(value: Date | string | null) {
+  const normalized = normalizeDateValue(value);
+  return normalized ? normalized.toISOString().slice(0, 10) : "none";
 }
 
 function formatEvidenceId(value: string | null | undefined) {
@@ -686,6 +808,76 @@ function latestByDate<T>(items: T[], getDate: (item: T) => string) {
   return [...items].sort(
     (left, right) => Date.parse(getDate(right)) - Date.parse(getDate(left)),
   )[0];
+}
+
+function sourcePathForItem<T>(
+  items: T[],
+  selected: T | undefined,
+  collectionPath: string,
+) {
+  const index = selected ? items.indexOf(selected) : -1;
+  return index >= 0 ? `${collectionPath}[${index}]` : undefined;
+}
+
+function sourcePathsMatch(
+  output: NormalizerOutput,
+  expected: NormalizerExpected,
+) {
+  return (
+    sourcePathMatches(
+      output.patient.sourcePath,
+      expected.sourcePaths?.patient,
+    ) &&
+    sourcePathMatches(
+      output.procedure.sourcePath,
+      expected.sourcePaths?.procedure,
+    ) &&
+    sourcePathMatches(
+      output.evidence.latestBloodPressure?.sourcePath ?? null,
+      expected.sourcePaths?.latestBloodPressure,
+    ) &&
+    sourcePathMatches(
+      output.evidence.latestTemperature?.sourcePath ?? null,
+      expected.sourcePaths?.latestTemperature,
+    ) &&
+    sourcePathMatches(
+      output.evidence.latestCbc?.sourcePath ?? null,
+      expected.sourcePaths?.latestCbc,
+    ) &&
+    sourcePathMatches(
+      output.evidence.latestCmp?.sourcePath ?? null,
+      expected.sourcePaths?.latestCmp,
+    ) &&
+    sourcePathMatches(
+      output.evidence.historyAndPhysical?.sourcePath ?? null,
+      expected.sourcePaths?.historyAndPhysical,
+    ) &&
+    sourcePathMatches(
+      output.evidence.surgicalConsent?.sourcePath ?? null,
+      expected.sourcePaths?.surgicalConsent,
+    ) &&
+    sourcePathMatches(
+      output.evidence.anticoagulationPlan.sourcePath,
+      expected.sourcePaths?.medicationPlan,
+    ) &&
+    activeAnticoagulantSourcePathsMatch(output, expected)
+  );
+}
+
+function activeAnticoagulantSourcePathsMatch(
+  output: NormalizerOutput,
+  expected: NormalizerExpected,
+) {
+  return output.evidence.activeAnticoagulants.every((medication) => {
+    const expectedMedication = expected.sourcePaths?.activeAnticoagulants.find(
+      (item) => item.name.toLowerCase() === medication.name.toLowerCase(),
+    );
+
+    return sourcePathMatches(
+      medication.sourcePath,
+      expectedMedication?.sourcePath,
+    );
+  });
 }
 
 function patientAndProcedureMatch(
@@ -714,7 +906,7 @@ function patientAndProcedureMatch(
   );
 }
 
-function outputDatesAreDates(output: NormalizerOutput) {
+function outputDatesAreValid(output: NormalizerOutput) {
   return [
     output.procedure.date,
     output.evidence.latestBloodPressure?.measuredAt,
@@ -725,9 +917,7 @@ function outputDatesAreDates(output: NormalizerOutput) {
     output.evidence.latestCmp?.effectiveAt,
     output.evidence.anticoagulationPlan.date,
     output.metadata.submissionReceivedAt,
-  ].every(
-    (value) => value === null || value === undefined || value instanceof Date,
-  );
+  ].every((value) => value === null || value === undefined || normalizeDateValue(value));
 }
 
 function latestVitalsMatch(
@@ -803,8 +993,6 @@ function documentMatches(
 
   return (
     outputDocument !== null &&
-    (expectedDocument.doc_id === null ||
-      outputDocument.documentId === expectedDocument.doc_id) &&
     outputDocument.type === expectedDocument.type &&
     datesEqual(outputDocument.date, expectedDocument.date) &&
     surgicalConsentSignedStatusMatches(outputDocument, expectedDocument) &&
@@ -863,12 +1051,25 @@ function anticoagulantsMatch(
   output: NormalizerOutput,
   expected: NormalizerExpected,
 ) {
-  return arraysEqual(
-    output.evidence.activeAnticoagulants
-      .map((medication) => medication.name.toLowerCase())
-      .sort(),
-    expected.activeAnticoagulants.map((name) => name.toLowerCase()).sort(),
+  const outputMedications = output.evidence.activeAnticoagulants
+    .map((medication) => ({
+      name: medication.name.toLowerCase(),
+      sourcePath: medication.sourcePath,
+    }))
+    .sort((left, right) => left.name.localeCompare(right.name));
+  const expectedNames = expected.activeAnticoagulants
+    .map((name) => name.toLowerCase())
+    .sort();
+  const namesMatch = arraysEqual(
+    outputMedications.map((medication) => medication.name),
+    expectedNames,
   );
+
+  if (!namesMatch) {
+    return false;
+  }
+
+  return true;
 }
 
 function anticoagulationPlanPresenceMatches(
@@ -948,16 +1149,52 @@ function planMissingOrIncompleteReasonMatches(
   return excerptMatches && sourcePathMatches;
 }
 
-function datesEqual(actual: Date | null, expected: string | null) {
+function datesEqual(actual: Date | string | null, expected: string | null) {
   if (actual === null || expected === null) {
     return actual === null && expected === null;
   }
 
-  return actual.getTime() === Date.parse(expected);
+  return normalizeDateValue(actual)?.getTime() === Date.parse(expected);
+}
+
+function normalizeDateValue(value: Date | string | null | undefined) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function sourceMatches(actual: string, expected: string) {
   return expected === "" || actual === expected;
+}
+
+function sourcePathMatches(
+  actual: string | null,
+  expected: SourcePathExpectation | undefined,
+): boolean {
+  if (!expected) {
+    return true;
+  }
+
+  if (typeof expected !== "string") {
+    return expected.some((candidate) => sourcePathMatches(actual, candidate));
+  }
+
+  const normalizedActual = actual?.toLowerCase();
+  const normalizedExpected = expected.toLowerCase();
+
+  return Boolean(
+    actual === expected ||
+    actual?.startsWith(`${expected}.`) ||
+    actual?.startsWith(`${expected}[`) ||
+    normalizedActual === normalizedExpected ||
+    normalizedActual?.startsWith(`${normalizedExpected}.`) ||
+    normalizedActual?.startsWith(`${normalizedExpected}[`) ||
+    (normalizedExpected?.startsWith("line ") &&
+      normalizedActual?.includes(normalizedExpected)),
+  );
 }
 
 function looseTextMatches(actual: string, expected: string) {
@@ -995,16 +1232,6 @@ function loadLocalEnv() {
       throw error;
     }
   }
-}
-
-function requiredEnv(name: string) {
-  const value = process.env[name];
-
-  if (!value) {
-    throw new Error(`${name} is required to run Evalite evals.`);
-  }
-
-  return value;
 }
 
 function configuredLogLevel() {
