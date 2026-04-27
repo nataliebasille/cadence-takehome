@@ -5,13 +5,13 @@ Tex Phile is a plain-text demo fixture for the main CLI. It represents an outsid
 Run it with:
 
 ```sh
-pnpm run cli tex_phile
+pnpm run triage tex_phile
 ```
 
 Or run the text file directly:
 
 ```sh
-pnpm run cli patients/tex_phile/patient.txt
+pnpm run triage patients/tex_phile/patient.txt
 ```
 
 The direct text-file mode also writes a reusable fixture under `patients/<text-file-name>/patient.txt`, so a one-off packet can be promoted into a patient fixture.

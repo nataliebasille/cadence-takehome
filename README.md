@@ -34,7 +34,7 @@ care where they came from.
 ```sh
 pnpm install
 cp .env.example .env
-pnpm run cli brucia_waynwright
+pnpm run triage brucia_waynwright
 ```
 
 Add your OpenAI API key to `.env` before running the CLI.
@@ -137,26 +137,54 @@ cp .env.example .env
 
 ## Scripts
 
-| Command                      | Description                                                                                |
-| ---------------------------- | ------------------------------------------------------------------------------------------ |
-| `pnpm run cli brucia_waynwright` | Runs the CLI against the `patients/brucia_waynwright` fixture.                             |
-| `pnpm run cli <patient-or-path>` | Runs the CLI against a patient fixture folder, a `.json` file, or a `.txt` patient packet. |
-| `pnpm eval`                  | Runs the Evalite normalizer evals against the configured OpenAI model.                     |
-| `pnpm test`                  | Runs the Vitest unit test suite, including deterministic rules-engine tests.               |
-| `pnpm typecheck`             | Runs TypeScript without emitting files.                                                    |
-| `pnpm build`                 | Compiles the TypeScript project into `dist/`.                                              |
-| `pnpm start`                 | Runs the compiled app from `dist/main.js`. Run `pnpm build` first.                         |
-| `pnpm lint`                  | Runs ESLint across the repo.                                                               |
-| `pnpm format`                | Formats the repo with Prettier.                                                            |
-| `pnpm format:check`          | Checks Prettier formatting without changing files.                                         |
+| Command                             | Description                                                                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------ |
+| `pnpm run triage brucia_waynwright` | Runs the CLI against the `patients/brucia_waynwright` fixture.                             |
+| `pnpm run triage <patient-or-path>` | Runs the CLI against a patient fixture folder, a `.json` file, or a `.txt` patient packet. |
+| `pnpm eval`                         | Runs the Evalite normalizer evals against the configured OpenAI model.                     |
+| `pnpm test`                         | Runs the Vitest unit test suite, including deterministic rules-engine tests.               |
+| `pnpm typecheck`                    | Runs TypeScript without emitting files.                                                    |
+| `pnpm build`                        | Compiles the TypeScript project into `dist/`.                                              |
+| `pnpm start`                        | Runs the compiled app from `dist/main.js`. Run `pnpm build` first.                         |
+| `pnpm lint`                         | Runs ESLint across the repo.                                                               |
+| `pnpm format`                       | Formats the repo with Prettier.                                                            |
+| `pnpm format:check`                 | Checks Prettier formatting without changing files.                                         |
 
 ## CLI
 
 Run the main triage CLI with a patient folder name:
 
 ```sh
-pnpm run cli brucia_waynwright
+pnpm run triage brucia_waynwright
 ```
+
+![Formatted CLI output showing a NEEDS_FOLLOW_UP triage result](docs/cli-output.svg)
+
+### Output Modes
+
+By default, the CLI prints a readable triage summary for human review:
+
+```sh
+pnpm run triage brucia_waynwright
+```
+
+Use `--json` to write the raw rules-engine result as JSON to the terminal:
+
+```sh
+pnpm run triage brucia_waynwright --json
+```
+
+Redirect stdout to write the JSON output to a file:
+
+```sh
+pnpm run triage brucia_waynwright --json > triage-result.json
+```
+
+The JSON result is written to stdout, while diagnostic logs and fixture-creation
+messages are written to stderr. Keep `--log-level` unset, or use
+`--log-level silent`, when you want a clean machine-readable output stream.
+
+### Input Formats
 
 The CLI now treats plain-text packets as first-class patient input. It accepts:
 
@@ -195,7 +223,7 @@ To add a new text patient case:
 3. Run the new case by folder name:
 
    ```sh
-   pnpm run cli tex_phile
+   pnpm run triage tex_phile
    ```
 
 The included demo fixture is `patients/tex_phile/patient.txt`. It is an
@@ -206,7 +234,7 @@ documented warfarin plan.
 You can also pass a text file directly:
 
 ```sh
-pnpm run cli path/to/patient-packet.txt
+pnpm run triage path/to/patient-packet.txt
 ```
 
 When a direct `.txt` file is used, the CLI writes a reusable copy to
@@ -232,13 +260,13 @@ To add a new Cadence-style patient case:
 3. Run the new case by folder name:
 
    ```sh
-   pnpm run cli jane_example
+   pnpm run triage jane_example
    ```
 
    You can also run it by JSON path:
 
    ```sh
-   pnpm run cli patients/jane_example/patient.json
+   pnpm run triage patients/jane_example/patient.json
    ```
 
 If the folder name is not found, the CLI prints the available patient fixture
@@ -250,7 +278,7 @@ To test a patient file that does not use the Cadence API v2 shape, pass the JSON
 file path directly:
 
 ```sh
-pnpm run cli path/to/non-cadence-patient.json
+pnpm run triage path/to/non-cadence-patient.json
 ```
 
 This direct-path mode is intentionally format-flexible so you can exercise the
@@ -259,20 +287,20 @@ normalizer against non-Cadence source data.
 By default, the CLI runs normalization and deterministic policy verification:
 
 ```sh
-pnpm run cli brucia_waynwright
+pnpm run triage brucia_waynwright
 ```
 
 You can also pass a patient text or JSON path and optionally override the OpenAI model:
 
 ```sh
-pnpm run cli patients/brucia_waynwright/patient.json --model gpt-5.4-mini
+pnpm run triage patients/brucia_waynwright/patient.json --model gpt-5.4-mini
 ```
 
 Diagnostic logs are hidden by default. Use `--log-level error|warn|info|debug`
 or set `LOG_LEVEL` to show them:
 
 ```sh
-pnpm run cli brucia_waynwright --log-level info
+pnpm run triage brucia_waynwright --log-level info
 ```
 
 ## Reliability Design

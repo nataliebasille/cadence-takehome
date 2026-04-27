@@ -16,6 +16,10 @@ type EvidenceSummary = {
   details: string[];
 };
 
+type FormatRunResultOptions = {
+  patientName?: string;
+};
+
 const color = {
   bold: (value: string) => `\u001B[1m${value}\u001B[22m`,
   dim: (value: string) => `\u001B[2m${value}\u001B[22m`,
@@ -25,9 +29,15 @@ const color = {
   cyan: (value: string) => `\u001B[36m${value}\u001B[39m`,
 };
 
-export function formatRunResult(result: RulesRunnerResult) {
+export function formatRunResult(
+  result: RulesRunnerResult,
+  options: FormatRunResultOptions = {},
+) {
   const lines = [
     color.bold("Pre-op scheduling triage"),
+    ...(options.patientName ?
+      ["", `${color.bold("PATIENT:")} ${color.cyan(options.patientName)}`]
+    : []),
     "",
     `${color.bold("Decision:")} ${formatDecision(result.decision)}`,
     `${color.bold("Explanation:")} ${result.explanation}`,

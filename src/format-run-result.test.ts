@@ -141,6 +141,25 @@ describe("formatRunResult", () => {
     );
   });
 
+  it("prints the patient name when provided", () => {
+    const result: RulesRunnerResult = {
+      decision: "READY",
+      explanation: "READY: All pre-op scheduling requirements satisfied",
+      evidence: [],
+      issues: [],
+      ruleResults: {},
+    };
+
+    const output = stripAnsi(
+      formatRunResult(result, { patientName: "Tex Phile" }),
+    );
+
+    expect(output).toContain("PATIENT: Tex Phile");
+    expect(output.indexOf("PATIENT: Tex Phile")).toBeLessThan(
+      output.indexOf("Decision: READY"),
+    );
+  });
+
   it("labels gathered CBC evidence", () => {
     const result: RulesRunnerResult = {
       decision: "NEEDS_FOLLOW_UP",
